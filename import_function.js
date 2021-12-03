@@ -94,10 +94,10 @@ function apimAddKeys(apimRg, apimName, apiName, functionKey) {
 
     return axios.put(baseUrl + addKeysUrl, addKeysBody, auth)
         .then(function (response) {
-            console.log('Success 2');
+            return 1;
         })
         .catch(function (error) {
-            console.log('Fail 2');
+            return 0;
         })
 }
 
@@ -121,11 +121,41 @@ function addApimBackend(apimRg, apimName, apiName, functionAppName, functionUrl)
     }
     return axios.put(baseUrl + backendUrl, backendBody, auth)
         .then(function (response) {
-            console.log('Success 3');
+            return 1;
         })
         .catch(function (error) {
-            console.log('Fail 3');
+            return 0;
         })
+}
+
+function parseOperation(item, binding, method) {
+    let op = {}
+    op['method'] = method
+    op['templateParameters'] = [];
+    op['operation_display_name'] = item.properties.name
+    op['operation_name'] = method.toLowerCase() + '-' + item.properties.name.toLowerCase();
+    if ('route' in binding) {
+        op['urlTemplate'] = binding['route']
+        let parameters = [];
+        var ind = 0;
+        for (letter of binding.route) {
+            var start = 0;
+            if (letter == '{') {
+                start = ind + 1;
+            }
+            if (letter == '}') {
+                parameters.push(binding.route.slice(start,ind))
+            }
+            ind += 1;
+        }
+        if (parameters.length > 0) {
+            op.templateParameters = parameters
+        }
+    }
+    else {
+        op.urlTemplate = item.properties.invoke_url_template.split('.net/api')[-1]
+    }
+    return op;
 }
 
 // # Add operation
@@ -240,6 +270,7 @@ async function main() {
     const defaultKey = await getFunctionKey('Split', 'SplitTestFunction')
     console.log('Found Key.');
 
+    // Create API within APIM
     console.log('Creating new API within API Management...')
     const createApiResult = await createApi('lithographtestfunction', 'lithograph-test', name, displayName)
     if (createApiResult == 1) {
@@ -257,8 +288,24 @@ async function main() {
     //         const defaultKey = responses[2]
     //         console.log(defaultKey)
             // createApi('lithographtestfunction', 'lithograph-test', name, displayName)
+
+    // Add Azure Function Keys to APIM
+    console.log('Adding Function Keys to API Management...');
     const apimKeyPromise = await apimAddKeys('lithographtestfunction', 'lithograph-test', name, defaultKey);
+    if (apimKeyPromise == 1) {
+        console.log('Success');
+    } else {
+        console.log('Failed to add keys');
+    }
+    
+    // Add Function as Backend in APIM
+    console.log('Adding Function App as an API Management Backend...');
     const apimBackendPromise = await addApimBackend('lithographtestfunction', 'lithograph-test', name, 'SplitTestFunction', functionAppUrl);
+    if (apimBackendPromise == 1) {
+        console.log('Success');
+    } else {
+        console.log('Failed to add Backend');
+    }
 
     let operationsInfo = [];
     for (item of functions) {
@@ -266,32 +313,33 @@ async function main() {
         for (binding of item.properties.config.bindings) {
             if (binding.type == 'httpTrigger') {
                 for (method of binding.methods) {
-                    let op = {}
-                    op['method'] = method
-                    op['templateParameters'] = [];
-                    op['operation_display_name'] = item.properties.name
-                    op['operation_name'] = method.toLowerCase() + '-' + item.properties.name.toLowerCase();
-                    if ('route' in binding) {
-                        op['urlTemplate'] = binding['route']
-                        let parameters = [];
-                        var ind = 0;
-                        for (letter of binding.route) {
-                            var start = 0;
-                            if (letter == '{') {
-                                start = ind + 1;
-                            }
-                            if (letter == '}') {
-                                parameters.push(binding.route.slice(start,ind))
-                            }
-                            ind += 1;
-                        }
-                        if (parameters.length > 0) {
-                            op.templateParameters = parameters
-                        }
-                    }
-                    else {
-                        op.urlTemplate = item.properties.invoke_url_template.split('.net/api')[-1]
-                    }
+                    const op = parseOperation(item, binding, method);
+                    // let op = {}
+                    // op['method'] = method
+                    // op['templateParameters'] = [];
+                    // op['operation_display_name'] = item.properties.name
+                    // op['operation_name'] = method.toLowerCase() + '-' + item.properties.name.toLowerCase();
+                    // if ('route' in binding) {
+                    //     op['urlTemplate'] = binding['route']
+                    //     let parameters = [];
+                    //     var ind = 0;
+                    //     for (letter of binding.route) {
+                    //         var start = 0;
+                    //         if (letter == '{') {
+                    //             start = ind + 1;
+                    //         }
+                    //         if (letter == '}') {
+                    //             parameters.push(binding.route.slice(start,ind))
+                    //         }
+                    //         ind += 1;
+                    //     }
+                    //     if (parameters.length > 0) {
+                    //         op.templateParameters = parameters
+                    //     }
+                    // }
+                    // else {
+                    //     op.urlTemplate = item.properties.invoke_url_template.split('.net/api')[-1]
+                    // }
                     addOperation('lithographtestfunction', 'lithograph-test', name, op.operation_name, op.operation_display_name, op.urlTemplate, op.method, op.templateParameters);
                     addPolicy('lithographtestfunction', 'lithograph-test', name, op.operation_name, name);
                 }
