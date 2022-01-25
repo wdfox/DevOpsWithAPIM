@@ -1,1 +1,27 @@
-
+name: 'Azure API Management Import Function'
+description: 'Imports an API into Azure API Management'
+inputs:
+  FunctionResourceGroup: 
+    description: 'Resource Group of where the Function is located'
+    required: true
+  FunctionName: 
+    description: 'Name of the function we are importing'
+    required: true
+  DisplayName: 
+    description: 'Display Name of the API in API Management'
+    required: true
+  APIName: 
+    description: 'Name of the API in API Management'
+    required: true
+  APIUrlSuffix: 
+    description: 'API URL Suffix'
+    required: true
+  APIMResourceGroup: 
+    description: 'Resource Group of where the API Management instance is located'
+    required: true
+  APIMName: 
+    description: 'Name of the API Management instance'
+    required: true
+runs:
+  using: 'node12'
+  main: 'import_function.js'
