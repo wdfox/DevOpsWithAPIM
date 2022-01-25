@@ -9,6 +9,48 @@ In general, API implementations may take on all shapes and sizes depending on th
 ## Solution
 In the current portal-driven experience, the UI uses JavaScript to make a series of REST calls to the Azure API, covering all the steps for importing an HTTP-triggered Function as an API in API Management. This process can be automated and repeated as part of a deployment pipeline and packaged as an Action or Pipeline Task for users around the world. 
 
+## Azure Authentication
+
+Authentication is done through the [Azure Identity library](https://azure.github.io/azure-sdk-for-js/identity.html).
+
+### Local development
+The codebase will attempt to use authenticate using the credentials from ```az login``` within the local development environment
+
+### GitHub action
+The GitHub Action will be configured to use an [Azure Service Principal for RBAC](https://docs.microsoft.com/en-us/azure/role-based-access-control/overview) and add them as a GitHub Secret in your repository.
+
+1. Download Azure CLI from here, run az login to login with your Azure credentials.
+2. Run Azure CLI command
+
+```bash
+  az ad sp create-for-rbac --name "myApp" --role contributor \
+                          --scopes /subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.Web/sites/{app-name} \
+                          --sdk-auth
+
+# Replace {subscription-id}, {resource-group}, and {app-name} with the names of your subscription, resource group, and Azure function app.
+# The command should output a JSON object similar to this:
+
+{
+  "clientId": "<GUID>",
+  "clientSecret": "<GUID>",
+  "subscriptionId": "<GUID>",
+  "tenantId": "<GUID>",
+  (...)
+}
+
+3. Copy and paste the json response from above Azure CLI to your GitHub Repository > Settings > Secrets > Add a new secret > AZURE_RBAC_CREDENTIALS
+4. Then use the RBAC based credentials with the 'Login via Azure CLI' step to authenticate using the service principal
+
+```yaml
+    - name: 'Login via Azure CLI'
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_RBAC_CREDENTIALS }}
+```
+
+5. Change variable values in env: section according to your function app.
+Commit and push your project to GitHub repository, you should see a new GitHub workflow initiated in Actions tab.
+
 ## Setup and run
 
 ### Preqs
