@@ -13,7 +13,6 @@ accessToken = "Bearer ";
 auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application/json'}}
 
 
-
 function getFunctionApp(functionRg, functionAppName) {
     const metadataUrl = "resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName + "?api-version=2016-08-01";
     const functionUrl = axios.get(baseUrl + metadataUrl, auth)
@@ -26,15 +25,6 @@ function getFunctionApp(functionRg, functionAppName) {
             console.log(error)
         })
     return functionUrl;
-    // try {
-    //     const response = await axios.get(baseUrl + metadataUrl, auth);
-    //     const url = response.data.properties.defaultHostName;
-    //     const functionUrl = 'https://' + url + '/api';
-    //     console.log(functionUrl);
-    //     return functionUrl;
-    // } catch (error) {
-    //     console.error(error);
-    // }
 }
 
 function getFunctions(functionRg, functionAppName) {
@@ -47,7 +37,6 @@ function getFunctions(functionRg, functionAppName) {
         .catch(function (error) {
             console.log(error)
         })
-    // console.log(functionsList);
     return functionsList;
 }
 
@@ -87,10 +76,10 @@ function createApi(apimRg, apimName, apiName, displayName) {
         })
 }
 
-// # Get access key from function
+// Get access key from function
 // # https://docs.microsoft.com/en-us/azure/api-management/import-function-app-as-api#authorization -- Host key auto created inside function, TODO, using defualt for now
 
-// # Add function access key to APIM
+// Add function access key to APIM
 function apimAddKeys(apimRg, apimName, apiName, functionKey) {
     const addKeysUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/namedValues/" + apiName + "-key?api-version=2021-01-01-preview"
     const addKeysBody = {
@@ -113,7 +102,7 @@ function apimAddKeys(apimRg, apimName, apiName, functionKey) {
         })
 }
 
-// # Add function as APIM Backend
+// Add function as APIM Backend
 function addApimBackend(apimRg, apimName, apiName, functionAppName, functionUrl) {
     const backendUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/backends/" + apiName + "?api-version=2021-01-01-preview"
     const backendBody = backend_body = {
@@ -141,7 +130,6 @@ function addApimBackend(apimRg, apimName, apiName, functionAppName, functionUrl)
 }
 
 function parseOperation(item, binding, method) {
-    // console.log(item)
     let op = {}
     op['method'] = method
     op['templateParameters'] = [];
@@ -153,7 +141,6 @@ function parseOperation(item, binding, method) {
         var ind = 0;
         var start = 0;
         for (letter of binding.route) {
-            // var start = 0;
             if (letter == '{') {
                 start = ind + 1;
             }
@@ -167,18 +154,15 @@ function parseOperation(item, binding, method) {
         }
     }
     else {
-        // console.log(item.properties.invoke_url_template.split('.net/api'))
         op.urlTemplate = item.properties.invoke_url_template.split('.net/api').slice(-1)[0]
     }
-    // console.log(op.urlTemplate)
     return op;
 }
 
-// # Add operation
+// Add operation
 function addOperation(apimRg, apimName, apiName, operationName, operationDisplayName, urlTemplate, method, parameters) {
     operationUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/apis/" + apiName + "/operations/" + operationName + "?api-version=2021-01-01-preview"
     let parsedParams = []
-    // console.log(parameters)
     for (p of parameters) {
         parsedParams.push({
             "name": p,
@@ -210,35 +194,8 @@ function addOperation(apimRg, apimName, apiName, operationName, operationDisplay
             // console.log(error)
         })
 }
-// def add_operation(apim_rg, apim_name, api_name, operation_name, operation_display_name, url_template, method, parameters):
-//     operation_url = "/resourceGroups/{}/providers/Microsoft.ApiManagement/service/{}/apis/{}/operations/{}?api-version=2021-01-01-preview".format(apim_rg, apim_name, api_name, operation_name)
-//     # print(operation_url)
-//     parsed_params = []
-//     for p in parameters:
-//         parsed_params.append({
-//               "name": p,
-//               "type": "",
-//               "values": [],
-//               "required": 'true'
-//         })
-    
-    // operation_body = {
-    //     "id": "/apis/{}/operations/{}".format(api_name, operation_name),
-    //     "name": operation_name,
-    //     "properties": {
-    //         "displayName": operation_display_name,
-    //         "description": "",
-    //         "urlTemplate": url_template,
-    //         "method": method,
-    //         "templateParameters": parsed_params,
-    //         "responses": []
-    //     }
-    // }
-//     res = requests.put(base_url + operation_url, headers=auth, data=json.dumps(operation_body))
-//     print(res.status_code)
-//     # print(res.text)
 
-// # Add policies
+// Add policies
 function addPolicy(apimRg, apimName, apiName, operationName, backendName) {
     policyUrl = "/resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/apis/" + apiName + "/operations/" + operationName + "/policies/policy?api-version=2021-01-01-preview"
     policyBody = {
@@ -306,82 +263,17 @@ async function main() {
 
     let operationsInfo = [];
     for (item of functions) {
-        // console.log(item.properties.config)
         for (binding of item.properties.config.bindings) {
             if (binding.type == 'httpTrigger') {
                 for (method of binding.methods) {
                     const op = parseOperation(item, binding, method);
-                    // let op = {}
-                    // op['method'] = method
-                    // op['templateParameters'] = [];
-                    // op['operation_display_name'] = item.properties.name
-                    // op['operation_name'] = method.toLowerCase() + '-' + item.properties.name.toLowerCase();
-                    // if ('route' in binding) {
-                    //     op['urlTemplate'] = binding['route']
-                    //     let parameters = [];
-                    //     var ind = 0;
-                    //     for (letter of binding.route) {
-                    //         var start = 0;
-                    //         if (letter == '{') {
-                    //             start = ind + 1;
-                    //         }
-                    //         if (letter == '}') {
-                    //             parameters.push(binding.route.slice(start,ind))
-                    //         }
-                    //         ind += 1;
-                    //     }
-                    //     if (parameters.length > 0) {
-                    //         op.templateParameters = parameters
-                    //     }
-                    // }
-                    // else {
-                    //     op.urlTemplate = item.properties.invoke_url_template.split('.net/api')[-1]
-                    // }
                     addOperation(apimRg, 'lithograph-test', apiName, op.operation_name, op.operation_display_name, op.urlTemplate, op.method, op.templateParameters);
                     addPolicy(apimRg, 'lithograph-test', apiName, op.operation_name, apiName);
                 }
             }
         }
     }
-        // }))
-
     console.log('Successful Run')
 }
 
 main()
-//                     else:
-//                         op['urlTemplate'] = item['properties']['invoke_url_template'].split('.net/api')[-1]
-//                     # print(op)
-//                     add_operation(apimRg, 'lithograph-test', name, op['operation_name'], op['operation_display_name'], op['urlTemplate'], op['method'], op['templateParameters'])
-//                     add_policy(apimRg, 'lithograph-test', name, op['operation_name'], name)
-//         print('---------')
-
-//     operations_info = []
-//     for item in function_app.functions:
-//         for binding in item['properties']['config']['bindings']:
-//             if binding['type'] == 'httpTrigger':
-//                 # print(binding)
-//                 # print(binding['methods'])
-//                 # op['operation_names']
-//                 for method in binding['methods']:
-//                     op = {}
-//                     op['method'] = method
-//                     op['templateParameters'] = []
-//                     op['operation_display_name'] = item['properties']['name']
-//                     op['operation_name'] = method.lower() + '-' + item['properties']['name'].lower()
-//                     if 'route' in binding:
-//                         op['urlTemplate'] = binding['route']
-//                         parameters = []
-//                         for ind, letter in enumerate(binding['route']):
-//                             if letter == '{':
-//                                 start = ind + 1
-//                             if letter == '}':
-//                                 parameters.append(binding['route'][start:ind])
-//                         if parameters:
-//                             op['templateParameters'] = parameters
-//                     else:
-//                         op['urlTemplate'] = item['properties']['invoke_url_template'].split('.net/api')[-1]
-//                     # print(op)
-//                     add_operation(apimRg, 'lithograph-test', name, op['operation_name'], op['operation_display_name'], op['urlTemplate'], op['method'], op['templateParameters'])
-//                     add_policy(apimRg, 'lithograph-test', name, op['operation_name'], name)
-//         print('---------')
