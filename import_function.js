@@ -7,6 +7,7 @@ apiName = "test3";
 apiUrlSuffix = "";
 apimRg = "lithographtestfunction";
 apimName = "lithograph-test";
+apiProduct = "";
 
 accessToken = "Bearer ";
 auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application/json'}}
@@ -17,7 +18,6 @@ function getFunctionApp(functionRg, functionAppName) {
     const metadataUrl = "resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName + "?api-version=2016-08-01";
     const functionUrl = axios.get(baseUrl + metadataUrl, auth)
         .then(function (response) {
-            // const resourceId = 'https://management.azure.com' + response.data.id;
             const url = response.data.properties.defaultHostName;
             const functionUrl = 'https://' + url + '/api';
             return functionUrl;
