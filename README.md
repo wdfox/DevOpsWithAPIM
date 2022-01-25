@@ -48,9 +48,7 @@ The GitHub Action will be configured to use an [Azure Service Principal for RBAC
         creds: ${{ secrets.AZURE_RBAC_CREDENTIALS }}
 ```
 
-5. Change variable values in env: section according to your function app.
-Commit and push your project to GitHub repository, you should see a new GitHub workflow initiated in Actions tab.
-
+5. Change variable values in env: section according to your function app if setup there
 ## Setup and run
 
 ### Preqs
