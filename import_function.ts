@@ -1,12 +1,12 @@
 const axios = require('axios');
 
-let functionRg: string = "Split";
-let functionAppName: string = "SplitTestFunction";
-let displayName: string = "Test API 3";
-let apiName: string = "test3";
+const functionRg: string = "Split";
+const functionAppName: string = "SplitTestFunction";
+const displayName: string = "Test API 3";
+const apiName: string = "test3";
 let apiUrlSuffix: string = "";
-let apimRg: string = "lithographtestfunction";
-let apimName: string = "lithograph-test";
+const apimRg: string = "lithographtestfunction";
+const apimName: string = "lithograph-test";
 let apiProduct: string = "";
 
 let accessToken: string = "Bearer ";
