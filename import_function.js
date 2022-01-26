@@ -1,11 +1,22 @@
 const axios = require('axios');
 
+functionRg = "Split";
+functionAppName = "SplitTestFunction";
+displayName = "Test API 3";
+apiName = "test3";
+apiUrlSuffix = "";
+apimRg = "lithographtestfunction";
+apimName = "lithograph-test";
+apiProduct = "";
+
+accessToken = "Bearer ";
+auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application/json'}}
+
 
 function getFunctionApp(functionRg, functionAppName) {
     const metadataUrl = "resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName + "?api-version=2016-08-01";
     const functionUrl = axios.get(baseUrl + metadataUrl, auth)
         .then(function (response) {
-            // const resourceId = 'https://management.azure.com' + response.data.id;
             const url = response.data.properties.defaultHostName;
             const functionUrl = 'https://' + url + '/api';
             return functionUrl;
@@ -14,15 +25,6 @@ function getFunctionApp(functionRg, functionAppName) {
             console.log(error)
         })
     return functionUrl;
-    // try {
-    //     const response = await axios.get(baseUrl + metadataUrl, auth);
-    //     const url = response.data.properties.defaultHostName;
-    //     const functionUrl = 'https://' + url + '/api';
-    //     console.log(functionUrl);
-    //     return functionUrl;
-    // } catch (error) {
-    //     console.error(error);
-    // }
 }
 
 function getFunctions(functionRg, functionAppName) {
@@ -35,7 +37,6 @@ function getFunctions(functionRg, functionAppName) {
         .catch(function (error) {
             console.log(error)
         })
-    // console.log(functionsList);
     return functionsList;
 }
 
@@ -75,10 +76,10 @@ function createApi(apimRg, apimName, apiName, displayName) {
         })
 }
 
-// # Get access key from function
+// Get access key from function
 // # https://docs.microsoft.com/en-us/azure/api-management/import-function-app-as-api#authorization -- Host key auto created inside function, TODO, using defualt for now
 
-// # Add function access key to APIM
+// Add function access key to APIM
 function apimAddKeys(apimRg, apimName, apiName, functionKey) {
     const addKeysUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/namedValues/" + apiName + "-key?api-version=2021-01-01-preview"
     const addKeysBody = {
@@ -101,7 +102,7 @@ function apimAddKeys(apimRg, apimName, apiName, functionKey) {
         })
 }
 
-// # Add function as APIM Backend
+// Add function as APIM Backend
 function addApimBackend(apimRg, apimName, apiName, functionAppName, functionUrl) {
     const backendUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/backends/" + apiName + "?api-version=2021-01-01-preview"
     const backendBody = backend_body = {
@@ -138,8 +139,8 @@ function parseOperation(item, binding, method) {
         op['urlTemplate'] = binding['route']
         let parameters = [];
         var ind = 0;
+        var start = 0;
         for (letter of binding.route) {
-            var start = 0;
             if (letter == '{') {
                 start = ind + 1;
             }
@@ -153,14 +154,14 @@ function parseOperation(item, binding, method) {
         }
     }
     else {
-        op.urlTemplate = item.properties.invoke_url_template.split('.net/api')[-1]
+        op.urlTemplate = item.properties.invoke_url_template.split('.net/api').slice(-1)[0]
     }
     return op;
 }
 
-// # Add operation
+// Add operation
 function addOperation(apimRg, apimName, apiName, operationName, operationDisplayName, urlTemplate, method, parameters) {
-    operationUrl = "/resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/apis/" + apiName + "/operations/" + operationName + "?api-version=2021-01-01-preview"
+    operationUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/apis/" + apiName + "/operations/" + operationName + "?api-version=2021-01-01-preview"
     let parsedParams = []
     for (p of parameters) {
         parsedParams.push({
@@ -186,42 +187,15 @@ function addOperation(apimRg, apimName, apiName, operationName, operationDisplay
 
     return axios.put(baseUrl + operationUrl, operationBody, auth)
         .then(function (response) {
-            console.log('Success 4');
+            // console.log('Success 4');
         })
         .catch(function (error) {
-            console.log('Fail 4');
-            console.log(error)
+            // console.log('Fail 4');
+            // console.log(error)
         })
 }
-// def add_operation(apim_rg, apim_name, api_name, operation_name, operation_display_name, url_template, method, parameters):
-//     operation_url = "/resourceGroups/{}/providers/Microsoft.ApiManagement/service/{}/apis/{}/operations/{}?api-version=2021-01-01-preview".format(apim_rg, apim_name, api_name, operation_name)
-//     # print(operation_url)
-//     parsed_params = []
-//     for p in parameters:
-//         parsed_params.append({
-//               "name": p,
-//               "type": "",
-//               "values": [],
-//               "required": 'true'
-//         })
-    
-    // operation_body = {
-    //     "id": "/apis/{}/operations/{}".format(api_name, operation_name),
-    //     "name": operation_name,
-    //     "properties": {
-    //         "displayName": operation_display_name,
-    //         "description": "",
-    //         "urlTemplate": url_template,
-    //         "method": method,
-    //         "templateParameters": parsed_params,
-    //         "responses": []
-    //     }
-    // }
-//     res = requests.put(base_url + operation_url, headers=auth, data=json.dumps(operation_body))
-//     print(res.status_code)
-//     # print(res.text)
 
-// # Add policies
+// Add policies
 function addPolicy(apimRg, apimName, apiName, operationName, backendName) {
     policyUrl = "/resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/apis/" + apiName + "/operations/" + operationName + "/policies/policy?api-version=2021-01-01-preview"
     policyBody = {
@@ -232,66 +206,46 @@ function addPolicy(apimRg, apimName, apiName, operationName, backendName) {
     }
     return axios.put(baseUrl + policyUrl, policyBody, auth)
         .then(function (response) {
-            console.log('Success 5');
+            // console.log('Success 5');
         })
         .catch(function (error) {
-            console.log('Fail 5');
+            // console.log('Fail 5');
         })
 }
-
-
-
-functionAppName = "";
-displayName = "Test API 3";
-name = "test3";
-apiUrlSuffix = "";
 
 
 baseUrl = "https://management.azure.com/subscriptions/811ac24a-7a5f-41a7-acff-8dd138042333/";
 // functions = "resourceGroups/Split/providers/Microsoft.Web/sites/SplitTestFunction?api-version=2016-08-01";
 
-accessToken = "Bearer "
-auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application/json'}}
-
 async function main() {
 
     // Get URL of Function App
     console.log('Getting Function App URL...')
-    const functionAppUrl = await getFunctionApp('Split', 'SplitTestFunction')
+    const functionAppUrl = await getFunctionApp(functionRg, functionAppName)
     console.log(functionAppUrl);
 
     // Get list of individual functions within function app
     console.log('Getting Functions...')
-    const functions = await getFunctions('Split', 'SplitTestFunction');
+    const functions = await getFunctions(functionRg, functionAppName);
     console.log(functions.map(x => x.properties.name));
 
     // Get key for functions
     console.log('Getting Function Key...')
-    const defaultKey = await getFunctionKey('Split', 'SplitTestFunction')
+    const defaultKey = await getFunctionKey(functionRg, functionAppName)
     console.log('Found Key.');
 
     // Create API within APIM
     console.log('Creating new API within API Management...')
-    const createApiResult = await createApi('lithographtestfunction', 'lithograph-test', name, displayName)
+    const createApiResult = await createApi(apimRg, 'lithograph-test', apiName, displayName)
     if (createApiResult == 1) {
         console.log('Successfully created API');
     } else {
         console.log('Failed to create new API');
     }
 
-    // axios.all([functionAppUrl, functions, defaultKey, createApiPromise])
-    //     .then(axios.spread((...responses) => {
-
-    //         const functionAppUrl = responses[0]
-    //         const functions = responses[1]
-    //         console.log(functions[0].properties.config)
-    //         const defaultKey = responses[2]
-    //         console.log(defaultKey)
-            // createApi('lithographtestfunction', 'lithograph-test', name, displayName)
-
     // Add Azure Function Keys to APIM
     console.log('Adding Function Keys to API Management...');
-    const apimKeyPromise = await apimAddKeys('lithographtestfunction', 'lithograph-test', name, defaultKey);
+    const apimKeyPromise = await apimAddKeys(apimRg, 'lithograph-test', apiName, defaultKey);
     if (apimKeyPromise == 1) {
         console.log('Success');
     } else {
@@ -300,7 +254,7 @@ async function main() {
     
     // Add Function as Backend in APIM
     console.log('Adding Function App as an API Management Backend...');
-    const apimBackendPromise = await addApimBackend('lithographtestfunction', 'lithograph-test', name, 'SplitTestFunction', functionAppUrl);
+    const apimBackendPromise = await addApimBackend(apimRg, 'lithograph-test', apiName, functionAppName, functionAppUrl);
     if (apimBackendPromise == 1) {
         console.log('Success');
     } else {
@@ -309,82 +263,17 @@ async function main() {
 
     let operationsInfo = [];
     for (item of functions) {
-        // console.log(item.properties.config)
         for (binding of item.properties.config.bindings) {
             if (binding.type == 'httpTrigger') {
                 for (method of binding.methods) {
                     const op = parseOperation(item, binding, method);
-                    // let op = {}
-                    // op['method'] = method
-                    // op['templateParameters'] = [];
-                    // op['operation_display_name'] = item.properties.name
-                    // op['operation_name'] = method.toLowerCase() + '-' + item.properties.name.toLowerCase();
-                    // if ('route' in binding) {
-                    //     op['urlTemplate'] = binding['route']
-                    //     let parameters = [];
-                    //     var ind = 0;
-                    //     for (letter of binding.route) {
-                    //         var start = 0;
-                    //         if (letter == '{') {
-                    //             start = ind + 1;
-                    //         }
-                    //         if (letter == '}') {
-                    //             parameters.push(binding.route.slice(start,ind))
-                    //         }
-                    //         ind += 1;
-                    //     }
-                    //     if (parameters.length > 0) {
-                    //         op.templateParameters = parameters
-                    //     }
-                    // }
-                    // else {
-                    //     op.urlTemplate = item.properties.invoke_url_template.split('.net/api')[-1]
-                    // }
-                    addOperation('lithographtestfunction', 'lithograph-test', name, op.operation_name, op.operation_display_name, op.urlTemplate, op.method, op.templateParameters);
-                    addPolicy('lithographtestfunction', 'lithograph-test', name, op.operation_name, name);
+                    addOperation(apimRg, 'lithograph-test', apiName, op.operation_name, op.operation_display_name, op.urlTemplate, op.method, op.templateParameters);
+                    addPolicy(apimRg, 'lithograph-test', apiName, op.operation_name, apiName);
                 }
             }
         }
     }
-        // }))
-
     console.log('Successful Run')
 }
 
 main()
-//                     else:
-//                         op['urlTemplate'] = item['properties']['invoke_url_template'].split('.net/api')[-1]
-//                     # print(op)
-//                     add_operation('lithographtestfunction', 'lithograph-test', name, op['operation_name'], op['operation_display_name'], op['urlTemplate'], op['method'], op['templateParameters'])
-//                     add_policy('lithographtestfunction', 'lithograph-test', name, op['operation_name'], name)
-//         print('---------')
-
-//     operations_info = []
-//     for item in function_app.functions:
-//         for binding in item['properties']['config']['bindings']:
-//             if binding['type'] == 'httpTrigger':
-//                 # print(binding)
-//                 # print(binding['methods'])
-//                 # op['operation_names']
-//                 for method in binding['methods']:
-//                     op = {}
-//                     op['method'] = method
-//                     op['templateParameters'] = []
-//                     op['operation_display_name'] = item['properties']['name']
-//                     op['operation_name'] = method.lower() + '-' + item['properties']['name'].lower()
-//                     if 'route' in binding:
-//                         op['urlTemplate'] = binding['route']
-//                         parameters = []
-//                         for ind, letter in enumerate(binding['route']):
-//                             if letter == '{':
-//                                 start = ind + 1
-//                             if letter == '}':
-//                                 parameters.append(binding['route'][start:ind])
-//                         if parameters:
-//                             op['templateParameters'] = parameters
-//                     else:
-//                         op['urlTemplate'] = item['properties']['invoke_url_template'].split('.net/api')[-1]
-//                     # print(op)
-//                     add_operation('lithographtestfunction', 'lithograph-test', name, op['operation_name'], op['operation_display_name'], op['urlTemplate'], op['method'], op['templateParameters'])
-//                     add_policy('lithographtestfunction', 'lithograph-test', name, op['operation_name'], name)
-//         print('---------')
