@@ -194,7 +194,7 @@ if __name__ == '__main__':
 
     apim_add_keys('lithographtestfunction', 'lithograph-test', name, function_app.default_key)
 
-    add_apim_backend('lithographtestfunction', 'lithograph-test', name, 'SplitTestFunction', function_url)
+    add_apim_backend('lithographtestfunction', 'lithograph-test', name, 'SplitTestFunction', function_app.function_url)
 
     operations_info = []
     for item in function_app.functions:
@@ -221,7 +221,7 @@ if __name__ == '__main__':
                             op['templateParameters'] = parameters
                     else:
                         op['urlTemplate'] = item['properties']['invoke_url_template'].split('.net/api')[-1]
-                    # print(op)
+                    print(op)
                     add_operation('lithographtestfunction', 'lithograph-test', name, op['operation_name'], op['operation_display_name'], op['urlTemplate'], op['method'], op['templateParameters'])
                     add_policy('lithographtestfunction', 'lithograph-test', name, op['operation_name'], name)
         print('---------')
