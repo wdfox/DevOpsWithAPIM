@@ -16,14 +16,14 @@ export class CredentialProvider {
         this.options = options;
     }
 
-    private isClientSecretPresent(): boolean {
+    private isClientCredential(): boolean {
         return !this.options.tenantId 
             && !this.options.clientSecret 
             && !this.options.clientId;
     }
     
     public get(): TokenCredential {
-        if (this.isClientSecretPresent()) {
+        if (this.isClientCredential()) {
             return new ClientSecretCredential(
                 this.options.tenantId as string, // The tenant ID in Azure Active Directory
                 this.options.clientId as string, // The app registration client Id in the AAD tenant

@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios'
 
 const functionRg: string = "Split";
 const functionAppName: string = "SplitTestFunction";
@@ -13,18 +13,21 @@ let accessToken: string = "Bearer ";
 let auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application/json'}}
 
 
-function getFunctionApp(functionRg: string, functionAppName: string) {
+const baseUrl: string = "https://management.azure.com/subscriptions/811ac24a-7a5f-41a7-acff-8dd138042333/";
+// functions = "resourceGroups/Split/providers/Microsoft.Web/sites/SplitTestFunction?api-version=2016-08-01";
+
+
+async function getFunctionApp(functionRg: string, functionAppName: string): Promise<string | undefined> {
     const metadataUrl = "resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName + "?api-version=2016-08-01";
-    const functionUrl = axios.get(baseUrl + metadataUrl, auth)
-        .then(function (response: { data: { properties: { defaultHostName: any; }; }; }) {
-            const url = response.data.properties.defaultHostName;
-            const functionUrl = 'https://' + url + '/api';
-            return functionUrl;
-        })
-        .catch(function (error: any) {
-            console.log(error)
-        })
-    return functionUrl;
+    const response = await axios.get(baseUrl + metadataUrl, auth);
+
+    try {
+        const url = response.data.properties.defaultHostName;
+        const functionUrl = 'https://' + url + '/api';
+        return functionUrl;
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 function getFunctions(functionRg: string, functionAppName: string) {
@@ -216,15 +219,11 @@ function addPolicy(apimRg: string, apimName: string, apiName: string, operationN
         })
 }
 
-
-let baseUrl:string = "https://management.azure.com/subscriptions/811ac24a-7a5f-41a7-acff-8dd138042333/";
-// functions = "resourceGroups/Split/providers/Microsoft.Web/sites/SplitTestFunction?api-version=2016-08-01";
-
 async function main() {
 
     // Get URL of Function App
     console.log('Getting Function App URL...')
-    const functionAppUrl = await getFunctionApp(functionRg, functionAppName)
+    const functionAppUrl: string | undefined = await getFunctionApp(functionRg, functionAppName)
     console.log(functionAppUrl);
 
     // Get list of individual functions within function app
@@ -257,7 +256,7 @@ async function main() {
     
     // Add Function as Backend in APIM
     console.log('Adding Function App as an API Management Backend...');
-    const apimBackendPromise = await addApimBackend(apimRg, 'lithograph-test', apiName, functionAppName, functionAppUrl);
+    const apimBackendPromise = await addApimBackend(apimRg, 'lithograph-test', apiName, functionAppName, functionAppUrl as string);
     if (apimBackendPromise == 1) {
         console.log('Success');
     } else {
