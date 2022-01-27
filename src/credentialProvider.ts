@@ -18,9 +18,9 @@ export class CredentialProvider {
 
     private isClientCredential(): boolean {
         if (this.options) {
-            return !this.options.tenantId 
-                && !this.options.clientSecret 
-                && !this.options.clientId;
+            return !!this.options.tenantId 
+                && !!this.options.clientSecret 
+                && !!this.options.clientId;
         }
         return false;
     }

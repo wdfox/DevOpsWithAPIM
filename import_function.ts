@@ -1,6 +1,10 @@
 import axios from 'axios'
 import { CredentialProvider } from './src/credentialProvider';
+import { getFunctions } from './src/getFunctions';
 
+import { WebSiteManagementClient } from "@azure/arm-appservice";
+
+const subscriptionId = "811ac24a-7a5f-41a7-acff-8dd138042333";
 const functionRg: string = "Split";
 const functionAppName: string = "SplitTestFunction";
 const displayName: string = "Test API 3";
@@ -31,19 +35,6 @@ async function getFunctionApp(functionRg: string, functionAppName: string): Prom
     } catch (error) {
         console.log(error);
     }
-}
-
-function getFunctions(functionRg: string, functionAppName: string) {
-    
-    const functionsUrl = "resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName + "/functions?api-version=2016-08-01";
-    const functionsList = axios.get(baseUrl + functionsUrl, auth)
-        .then(function (response: { data: { value: any; }; }) {
-            return response.data.value;
-        })
-        .catch(function (error: any) {
-            console.log(error)
-        })
-    return functionsList;
 }
 
 function getFunctionKey(functionRg: string, functionAppName: string) {
@@ -224,9 +215,11 @@ function addPolicy(apimRg: string, apimName: string, apiName: string, operationN
 
 async function main() {
 
+    let client = new WebSiteManagementClient(credential, subscriptionId);
     // TODO: use credential with SDK
     // Kevin H - Temporary to have the existing implementation successfully run
     accessToken = (await credential.getToken("https://management.azure.com"))?.token!;
+    // accessToken = ""
     auth = {headers: {'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json'}}
 
     // Get URL of Function App
@@ -236,8 +229,9 @@ async function main() {
 
     // Get list of individual functions within function app
     console.log('Getting Functions...')
-    const functions = await getFunctions(functionRg, functionAppName);
-    console.log(functions.map((x: { properties: { name: any; }; }) => x.properties.name));
+    const functions = await getFunctions(client, functionRg, functionAppName);
+    console.log(functions)
+    // console.log(functions.map((x: { properties: { name: any; }; }) => x.properties.name));
 
     // Get key for functions
     console.log('Getting Function Key...')

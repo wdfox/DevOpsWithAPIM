@@ -16,6 +16,7 @@
   },
   "homepage": "https://github.com/wdfox/DevOpsWithAPIM#readme",
   "dependencies": {
+    "@azure/arm-appservice": "^11.0.0",
     "@azure/identity": "^2.0.1",
     "axios": "^0.24.0"
   },
