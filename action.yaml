@@ -26,4 +26,4 @@ inputs:
     description: 'The name of the product which the APIs will be placed under'
 runs:
   using: 'node12'
-  main: 'import_function.js'
+  main: 'import_function.ts'
