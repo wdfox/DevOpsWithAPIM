@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { CredentialProvider } from './src/credentialProvider';
 
 const functionRg: string = "Split";
 const functionAppName: string = "SplitTestFunction";
@@ -16,6 +17,8 @@ let auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application
 const baseUrl: string = "https://management.azure.com/subscriptions/811ac24a-7a5f-41a7-acff-8dd138042333/";
 // functions = "resourceGroups/Split/providers/Microsoft.Web/sites/SplitTestFunction?api-version=2016-08-01";
 
+const credentialProvider = new CredentialProvider();
+const credential = credentialProvider.get();
 
 async function getFunctionApp(functionRg: string, functionAppName: string): Promise<string | undefined> {
     const metadataUrl = "resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName + "?api-version=2016-08-01";
@@ -220,6 +223,11 @@ function addPolicy(apimRg: string, apimName: string, apiName: string, operationN
 }
 
 async function main() {
+
+    // TODO: use credential with SDK
+    // Kevin H - Temporary to have the existing implementation successfully run
+    accessToken = (await credential.getToken("https://management.azure.com"))?.token!;
+    auth = {headers: {'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json'}}
 
     // Get URL of Function App
     console.log('Getting Function App URL...')

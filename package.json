@@ -2,8 +2,6 @@
   "name": "devopswithapim",
   "version": "1.0.0",
   "description": "### Problem The current APIM experience is very UI-driven, requiring user interaction through the Azure Portal to import and update APIs, even when hosted in native Azure services such as Functions. If Functions are being used as part of a production solution, this manual process acts as a blocker, slowing developer momentum.",
-
-  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

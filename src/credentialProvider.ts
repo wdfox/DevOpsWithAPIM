@@ -10,24 +10,28 @@ export class CredentialProviderOptions {
 }
 
 export class CredentialProvider {
-    options: CredentialProviderOptions;
+    options: CredentialProviderOptions | undefined;
 
-    constructor(options: CredentialProviderOptions) {
+    constructor(options?: CredentialProviderOptions) {
         this.options = options;
     }
 
     private isClientCredential(): boolean {
-        return !this.options.tenantId 
-            && !this.options.clientSecret 
-            && !this.options.clientId;
+        if (this.options) {
+            return !this.options.tenantId 
+                && !this.options.clientSecret 
+                && !this.options.clientId;
+        }
+        return false;
     }
     
     public get(): TokenCredential {
         if (this.isClientCredential()) {
+            const o = this.options as CredentialProviderOptions;
             return new ClientSecretCredential(
-                this.options.tenantId as string, // The tenant ID in Azure Active Directory
-                this.options.clientId as string, // The app registration client Id in the AAD tenant
-                this.options.clientSecret as string // The app registration secret for the registered application
+                o.tenantId as string, // The tenant ID in Azure Active Directory
+                o.clientId as string, // The app registration client Id in the AAD tenant
+                o.clientSecret as string // The app registration secret for the registered application
               );
         }
         return new DefaultAzureCredential();
