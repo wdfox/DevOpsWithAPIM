@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { CredentialProvider } from './src/credentialProvider';
 import { getFunctions } from './src/getFunctions';
+import { getFunctionKey } from './src/getFunctionKey';
 
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 
@@ -35,19 +36,6 @@ async function getFunctionApp(functionRg: string, functionAppName: string): Prom
     } catch (error) {
         console.log(error);
     }
-}
-
-function getFunctionKey(functionRg: string, functionAppName: string) {
-    const functionKeysUrl = "resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName + "/host/default/listkeys?api-version=2016-08-01";
-    const defaultKey = axios.post(baseUrl + functionKeysUrl, {}, auth)
-        .then(function (response: { data: { functionKeys: { default: any; }; }; }) {
-            return response.data.functionKeys.default
-        })
-        .catch(function (error: any) {
-            console.log(error);
-        })
-
-    return defaultKey;
 }
 
 function createApi(apimRg: string, apimName: string, apiName: string, displayName: string) {
@@ -235,8 +223,10 @@ async function main() {
 
     // Get key for functions
     console.log('Getting Function Key...')
-    const defaultKey = await getFunctionKey(functionRg, functionAppName)
-    console.log('Found Key.');
+    const defaultKey = await getFunctionKey(client, functionRg, functionAppName, apimName)
+    //const defaultKey = await getFunctionKey(functionRg, functionAppName)
+
+    console.log('Found Key: ' + defaultKey);
 
     // Create API within APIM
     console.log('Creating new API within API Management...')
