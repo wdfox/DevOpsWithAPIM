@@ -21,11 +21,7 @@ const apiVersion = "2021-01-01-preview";
 let accessToken: string = "Bearer ";
 let auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application/json'}}
 
-const baseUrl: string = "https://management.azure.com/subscriptions/" + subscriptionId + "/";
-// functions = "resourceGroups/Split/providers/Microsoft.Web/sites/SplitTestFunction?api-version=2016-08-01";
-
-const credentialProvider = new CredentialProvider();
-const credential = credentialProvider.get();
+const baseUrl: string = `https://management.azure.com/subscriptions/${executionContext.getSubscriptionId()}/`;
 
 function createApi(apimRg: string, apimName: string, apiName: string, displayName: string) {
 
