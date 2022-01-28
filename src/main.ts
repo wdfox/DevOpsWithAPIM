@@ -1,8 +1,8 @@
 import axios from 'axios'
-import ExecutionContext from './src/executionContext';
-import { getFunctions } from './src/getFunctions';
-import { getFunctionKey } from './src/getFunctionKey';
-import { getFunctionAppURL } from './src/getFunctionAppURL';
+import ExecutionContext from './executionContext';
+import { getFunctions } from './getFunctions';
+import { getFunctionKey } from './getFunctionKey';
+import { getFunctionAppURL } from './getFunctionAppURL';
 
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 
