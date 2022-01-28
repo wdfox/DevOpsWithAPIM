@@ -1,11 +1,12 @@
 import axios from 'axios'
-import { CredentialProvider } from './src/credentialProvider';
+import ExecutionContext from './src/executionContext';
 import { getFunctions } from './src/getFunctions';
 import { getFunctionKey } from './src/getFunctionKey';
 
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 
-const subscriptionId = "811ac24a-7a5f-41a7-acff-8dd138042333";
+const executionContext = ExecutionContext.create();
+
 const functionRg: string = "Split";
 const functionAppName: string = "SplitTestFunction";
 const displayName: string = "Test API 3";
@@ -19,11 +20,8 @@ let accessToken: string = "Bearer ";
 let auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application/json'}}
 
 
-const baseUrl: string = "https://management.azure.com/subscriptions/811ac24a-7a5f-41a7-acff-8dd138042333/";
+const baseUrl: string = `https://management.azure.com/subscriptions/${executionContext.getSubscriptionId()}/`;
 // functions = "resourceGroups/Split/providers/Microsoft.Web/sites/SplitTestFunction?api-version=2016-08-01";
-
-const credentialProvider = new CredentialProvider();
-const credential = credentialProvider.get();
 
 async function getFunctionApp(functionRg: string, functionAppName: string): Promise<string | undefined> {
     const metadataUrl = "resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName + "?api-version=2016-08-01";
@@ -203,7 +201,8 @@ function addPolicy(apimRg: string, apimName: string, apiName: string, operationN
 
 async function main() {
 
-    const client = new WebSiteManagementClient(credential, subscriptionId);
+    const credential = executionContext.getCredential();
+    const client = new WebSiteManagementClient(credential, executionContext.getSubscriptionId());
 
     // TODO: use credential with SDK
     // Kevin H - Temporary to have the existing implementation successfully run
