@@ -3,7 +3,7 @@ import { HostKeys, WebSiteManagementClient } from "@azure/arm-appservice";
 export async function getFunctionKey(client: WebSiteManagementClient, functionRg: string, functionAppName: string, apimName: string) {
     try {
 
-        //https://docs.microsoft.com/en-us/rest/api/appservice/web-apps/list-host-keys
+        // DOCS: https://docs.microsoft.com/en-us/rest/api/appservice/web-apps/list-host-keys
         let functionKey = client.webApps.listHostKeys(functionRg, functionAppName);
         
         //convert the object to a JSON object
