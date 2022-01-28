@@ -1,0 +1,76 @@
+name: APIM Action
+
+on:
+
+  # Allows you to run this workflow manually from the Actions tab.
+  workflow_dispatch:
+    #Specifies all the inputs for the workflow and allows you to override when triggering workflow.
+    inputs:
+      FunctionResourceGroup:
+        description: 'Resource group where the function is located'
+        required: true
+        default: 'Split'
+        type: string
+      FunctionName:
+        description: 'Name of the function we are importing'
+        default: 'SplitTestFunction'
+        required: true
+        type: string
+      DisplayName:
+        description: 'Display name of the API'
+        default: 'Test API 3'
+        required: true
+        type: string
+      APIName:
+        description: 'Name of the API'
+        default: 'test3'
+        required: true
+        type: string
+      APIUrlSuffix:
+        description: 'Suffix to append the API Management base URL'
+        type: string
+      APIMResourceGroup:
+        description: 'Resource group of where API Management is located'
+        default: 'lithographtestfunction'
+        required: true
+        type: string
+      APIMName:
+        description: 'Name of API Management Instance'
+        default: 'lithograph-test'
+        required: true
+        type: string
+      APIProduct:
+        description: 'Name of API Management Instance'
+        default: 'test-product'
+        required: false
+        type: string
+
+jobs:
+  Deploy_APIM_Function:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+
+      - name: Build the package
+        run: |
+         npm install
+         tsc
+        
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.CREDS }}
+
+      - name: Azure API Management Function Import
+        uses: ./
+        with:
+          FunctionResourceGroup: ${{ github.event.inputs.FunctionResourceGroup }}
+          FunctionName: ${{ github.event.inputs.FunctionName }}
+          DisplayName: ${{ github.event.inputs.DisplayName }}
+          APIName: ${{ github.event.inputs.APIName }}
+          APIUrlSuffix: ${{ github.event.inputs.APIUrlSuffix }}
+          APIMResourceGroup: ${{ github.event.inputs.APIMResourceGroup }}
+          APIMName: ${{ github.event.inputs.APIMName }}
+          APIProduct: ${{ github.event.inputs.APIProduct }}
