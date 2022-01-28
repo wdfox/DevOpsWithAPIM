@@ -38,20 +38,6 @@ async function getFunctionApp(functionRg: string, functionAppName: string): Prom
     }
 }
 
-// function getFunctionKey(functionRg: string, functionAppName: string) {
-//     const functionKeysUrl = "resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName + "/host/default/listkeys?api-version=2016-08-01";
-//     //                       resourceGroups/{resourceGroupName}/providers/Microsoft.Web/sites/{name}/functions/{functionName}/listkeys?api-version=2021-02-01
-//     const defaultKey = axios.post(baseUrl + functionKeysUrl, {}, auth)
-//         .then(function (response: { data: { functionKeys: { default: any; }; }; }) {
-//             return response.data.functionKeys.default
-//         })
-//         .catch(function (error: any) {
-//             console.log(error);
-//         })
-//         //console.log("default key " + defaultKey)
-//     return defaultKey;
-// }
-
 function createApi(apimRg: string, apimName: string, apiName: string, displayName: string) {
 
     const createApiUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/apis/" + apiName + "?api-version=2021-01-01-preview";
@@ -237,7 +223,7 @@ async function main() {
 
     // Get key for functions
     console.log('Getting Function Key...')
-    const defaultKey = await getFunctionKey(client, functionRg, functionAppName)
+    const defaultKey = await getFunctionKey(client, functionRg, functionAppName, apimName)
     //const defaultKey = await getFunctionKey(functionRg, functionAppName)
 
     console.log('Found Key: ' + defaultKey);
