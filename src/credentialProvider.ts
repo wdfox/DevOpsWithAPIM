@@ -16,15 +16,6 @@ export class CredentialProvider {
         this.options = options;
     }
 
-    private isClientCredential(): boolean {
-        if (this.options) {
-            return !!this.options.tenantId 
-                && !!this.options.clientSecret 
-                && !!this.options.clientId;
-        }
-        return false;
-    }
-    
     public get(): TokenCredential {
         if (this.isClientCredential()) {
             const o = this.options as CredentialProviderOptions;
@@ -35,5 +26,18 @@ export class CredentialProvider {
               );
         }
         return new DefaultAzureCredential();
+    }
+
+    private isClientCredential(): boolean {
+        if (this.options) {
+            return !this.isEmpty(this.options.tenantId) 
+                && !this.isEmpty(this.options.clientSecret)
+                && !this.isEmpty(this.options.clientId);
+        }
+        return false;
+    }
+    
+    private isEmpty(value: string | undefined): boolean {
+        return (!value || value.length === 0 );
     }
 }
