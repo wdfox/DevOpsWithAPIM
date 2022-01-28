@@ -9,13 +9,13 @@ import { WebSiteManagementClient } from "@azure/arm-appservice";
 const executionContext = ExecutionContext.create();
 
 const functionRg: string = "apim-backend-functionapp";
-const functionAppName: string = "testFunction";
+const functionAppName: string = "testFunction-";
 const displayName: string = "Test API 3";
 const apiName: string = "test3";
 let apiUrlSuffix: string = "";
 
 const apimRg: string = "apim-functionapp";
-const apimName: string = "function-test";
+const apimName: string = "apim-function-test";
 
 let apiProduct: string = "";
 const apiVersion = "2021-01-01-preview";
