@@ -1,10 +1,9 @@
 import * as core from '@actions/core'
 import { TokenCredential } from "@azure/identity";
-import { CredentialProvider, CredentialProviderOptions } from './credentialProvider'
-
+import { CredentialProvider } from './credentialProvider'
 
 /**
- * @summary factory for authentication with default credentials (that includes CLI) or with an app registration’s client Id and secret.
+ * @summary Execution context of the action to hold all the inputs to execute operations
  */
  export default class ExecutionContext {
      private credential?: TokenCredential;

@@ -8,15 +8,18 @@ import { WebSiteManagementClient } from "@azure/arm-appservice";
 
 const executionContext = ExecutionContext.create();
 
-const functionRg: string = "Split";
-const functionAppName: string = "SplitTestFunction";
+const functionRg: string = "apim-backend-functionapp";
+const functionAppName: string = "testFunction";
 const displayName: string = "Test API 3";
 const apiName: string = "test3";
 let apiUrlSuffix: string = "";
-const apimRg: string = "lithographtestfunction";
-const apimName: string = "lithograph-test";
+
+const apimRg: string = "apim-functionapp";
+const apimName: string = "function-test";
+
 let apiProduct: string = "";
 const apiVersion = "2021-01-01-preview";
+
 
 let accessToken: string = "Bearer ";
 let auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application/json'}}
@@ -205,7 +208,7 @@ async function main() {
     // Get list of individual functions within function app
     console.log('Getting Functions...')
     const functions = await getFunctions(client, functionRg, functionAppName);
-    console.log(functions)
+    //console.log(functions)
     // console.log(functions.map((x: { properties: { name: any; }; }) => x.properties.name));
 
     // Get key for functions
