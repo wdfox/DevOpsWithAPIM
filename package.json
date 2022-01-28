@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "### Problem The current APIM experience is very UI-driven, requiring user interaction through the Azure Portal to import and update APIs, even when hosted in native Azure services such as Functions. If Functions are being used as part of a production solution, this manual process acts as a blocker, slowing developer momentum.",
   "scripts": {
+    "dev": "tsc && node -r dotenv/config ./dist/import_function.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,11 +17,13 @@
   },
   "homepage": "https://github.com/wdfox/DevOpsWithAPIM#readme",
   "dependencies": {
+    "@actions/core": "^1.6.0",
     "@azure/arm-appservice": "^11.0.0",
     "@azure/identity": "^2.0.1",
     "axios": "^0.24.0"
   },
   "devDependencies": {
+    "dotenv": "^14.3.2",
     "typescript": "^4.5.5"
   }
 }

@@ -1,30 +1,30 @@
 import axios from 'axios'
-import { CredentialProvider } from './src/credentialProvider';
+import ExecutionContext from './src/executionContext';
 import { getFunctions } from './src/getFunctions';
 import { getFunctionKey } from './src/getFunctionKey';
 import { getFunctionAppURL } from './src/getFunctionAppURL';
 
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 
-const subscriptionId = "811ac24a-7a5f-41a7-acff-8dd138042333";
-const functionRg: string = "Split";
-const functionAppName: string = "SplitTestFunction";
+const executionContext = ExecutionContext.create();
+
+const functionRg: string = "apim-backend-functionapp";
+const functionAppName: string = "testFunction-";
 const displayName: string = "Test API 3";
 const apiName: string = "test3";
 let apiUrlSuffix: string = "";
-const apimRg: string = "lithographtestfunction";
-const apimName: string = "lithograph-test";
+
+const apimRg: string = "apim-functionapp";
+const apimName: string = "apim-function-test";
+
 let apiProduct: string = "";
 const apiVersion = "2021-01-01-preview";
+
 
 let accessToken: string = "Bearer ";
 let auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application/json'}}
 
-const baseUrl: string = "https://management.azure.com/subscriptions/" + subscriptionId + "/";
-// functions = "resourceGroups/Split/providers/Microsoft.Web/sites/SplitTestFunction?api-version=2016-08-01";
-
-const credentialProvider = new CredentialProvider();
-const credential = credentialProvider.get();
+const baseUrl: string = `https://management.azure.com/subscriptions/${executionContext.getSubscriptionId()}/`;
 
 function createApi(apimRg: string, apimName: string, apiName: string, displayName: string) {
 
@@ -191,7 +191,9 @@ function addPolicy(apimRg: string, apimName: string, apiName: string, operationN
 
 async function main() {
 
-    let client = new WebSiteManagementClient(credential, subscriptionId);
+    const credential = executionContext.getCredential();
+    const client = new WebSiteManagementClient(credential, executionContext.getSubscriptionId());
+
     // TODO: use credential with SDK
     // Kevin H - Temporary to have the existing implementation successfully run
     accessToken = (await credential.getToken("https://management.azure.com"))?.token!;
@@ -206,7 +208,7 @@ async function main() {
     // Get list of individual functions within function app
     console.log('Getting Functions...')
     const functions = await getFunctions(client, functionRg, functionAppName);
-    console.log(functions)
+    //console.log(functions)
     // console.log(functions.map((x: { properties: { name: any; }; }) => x.properties.name));
 
     // Get key for functions
