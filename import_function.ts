@@ -2,6 +2,7 @@ import axios from 'axios'
 import ExecutionContext from './src/executionContext';
 import { getFunctions } from './src/getFunctions';
 import { getFunctionKey } from './src/getFunctionKey';
+import { getFunctionAppURL } from './src/getFunctionAppURL';
 
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 
@@ -15,30 +16,20 @@ let apiUrlSuffix: string = "";
 const apimRg: string = "lithographtestfunction";
 const apimName: string = "lithograph-test";
 let apiProduct: string = "";
+const apiVersion = "2021-01-01-preview";
 
 let accessToken: string = "Bearer ";
 let auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application/json'}}
 
-
-const baseUrl: string = `https://management.azure.com/subscriptions/${executionContext.getSubscriptionId()}/`;
+const baseUrl: string = "https://management.azure.com/subscriptions/" + subscriptionId + "/";
 // functions = "resourceGroups/Split/providers/Microsoft.Web/sites/SplitTestFunction?api-version=2016-08-01";
 
-async function getFunctionApp(functionRg: string, functionAppName: string): Promise<string | undefined> {
-    const metadataUrl = "resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName + "?api-version=2016-08-01";
-    const response = await axios.get(baseUrl + metadataUrl, auth);
-
-    try {
-        const url = response.data.properties.defaultHostName;
-        const functionUrl = 'https://' + url + '/api';
-        return functionUrl;
-    } catch (error) {
-        console.log(error);
-    }
-}
+const credentialProvider = new CredentialProvider();
+const credential = credentialProvider.get();
 
 function createApi(apimRg: string, apimName: string, apiName: string, displayName: string) {
 
-    const createApiUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/apis/" + apiName + "?api-version=2021-01-01-preview";
+    const createApiUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/apis/" + apiName + "?api-version=" + apiVersion;
 
     const body = {
         "id" : "/apis/" + apiName,
@@ -64,7 +55,7 @@ function createApi(apimRg: string, apimName: string, apiName: string, displayNam
 
 // Add function access key to APIM
 function apimAddKeys(apimRg: string, apimName: string, apiName: string, functionKey: any) {
-    const addKeysUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/namedValues/" + apiName + "-key?api-version=2021-01-01-preview"
+    const addKeysUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/namedValues/" + apiName + "-key?api-version=" + apiVersion
     const addKeysBody = {
         "id" : "/namedValues/" + apiName + "-key",
         "name" : apiName + "-key",
@@ -87,7 +78,7 @@ function apimAddKeys(apimRg: string, apimName: string, apiName: string, function
 
 // Add function as APIM Backend
 function addApimBackend(apimRg: string, apimName: string, apiName: string, functionAppName: string, functionUrl: string) {
-    const backendUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/backends/" + apiName + "?api-version=2021-01-01-preview"
+    const backendUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/backends/" + apiName + "?api-version=" + apiVersion
     let backend_body:any;
     const backendBody = backend_body = {
         "id": apiName,
@@ -146,7 +137,7 @@ function parseOperation(item: { properties: { name: string; invoke_url_template:
 
 // Add operation
 function addOperation(apimRg: string, apimName: string, apiName: string, operationName: string, operationDisplayName: any, urlTemplate: any, method: any, parameters: any) {
-    let operationUrl:string = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/apis/" + apiName + "/operations/" + operationName + "?api-version=2021-01-01-preview"
+    let operationUrl:string = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/apis/" + apiName + "/operations/" + operationName + "?api-version=" + apiVersion
     let parsedParams = []
     let p:any;
     for (p of parameters) {
@@ -212,7 +203,7 @@ async function main() {
 
     // Get URL of Function App
     console.log('Getting Function App URL...')
-    const functionAppUrl: string | undefined = await getFunctionApp(functionRg, functionAppName)
+    const functionAppUrl: string | undefined = await getFunctionAppURL(client, functionRg, functionAppName)
     console.log(functionAppUrl);
 
     // Get list of individual functions within function app
