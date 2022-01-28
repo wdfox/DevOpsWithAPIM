@@ -203,7 +203,8 @@ function addPolicy(apimRg: string, apimName: string, apiName: string, operationN
 
 async function main() {
 
-    let client = new WebSiteManagementClient(credential, subscriptionId);
+    const client = new WebSiteManagementClient(credential, subscriptionId);
+
     // TODO: use credential with SDK
     // Kevin H - Temporary to have the existing implementation successfully run
     accessToken = (await credential.getToken("https://management.azure.com"))?.token!;
