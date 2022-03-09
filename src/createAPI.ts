@@ -3,7 +3,7 @@ import { ApiManagementClient, ApiCreateOrUpdateParameter } from "@azure/arm-apim
 // https://docs.microsoft.com/en-us/javascript/api/@azure/arm-apimanagement/apimanagementclient?view=azure-node-latest
 
 export async function createAPI(apimRg: string, apimName: string, apiName: string, displayName: string, credential: any, subscriptionId: string): Promise<number | undefined> {
-    console.log("subscriptionId: " + subscriptionId);
+    //console.log("subscriptionId: " + subscriptionId);
 
     //export async function createAPI(client: WebSiteManagementClient, functionRg: string, functionAppName: string): Promise<string | undefined> {
     try {
