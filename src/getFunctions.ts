@@ -10,8 +10,9 @@ export async function getFunctions(client: WebSiteManagementClient, functionRg: 
         const length: number = functionAppName.length + 1;
         if (f.name) {
             out.push(f.name.slice(length,))
+            //console.log("found functions: " + f.name.slice(length,))
         }
     }
-
+    console.table(out);
     return out;
 }

@@ -1,66 +1,58 @@
 import axios from 'axios'
+import { WebSiteManagementClient } from "@azure/arm-appservice";
+import { ApiManagementClient, ApiCreateOrUpdateParameter } from "@azure/arm-apimanagement";
+
 import ExecutionContext from './executionContext';
-import { getFunctions } from './getFunctions';
+// import { getFunctions } from './getFunctions'; // disabled for now until updated to return full JSON payload like the REST API did
 import { getFunctionKey } from './getFunctionKey';
 import { getFunctionAppURL } from './getFunctionAppURL';
 import { createAPI } from './createAPI';
 
+// Console Output
+const green: string = '\x1b[32m%s\x1b[0m';
+const red: string = '\x1b[31m%s\x1b[0m';
+const blue: string = '\x1b[34m%s\x1b[0m';
+const yellow: string = '\x1b[33m%s\x1b[0m';
 
-import { WebSiteManagementClient } from "@azure/arm-appservice";
-
-const executionContext = ExecutionContext.create();
-
-// const functionRg: string = "apim-backend-functionapp";
-// const functionAppName: string = "testFunction-";
-// const displayName: string = "Test API 3";
-// const apiName: string = "test3";
-// let apiUrlSuffix: string = "";
-
-// const apimRg: string = "apim-functionapp";
-// const apimName: string = "apim-function-test";
-
-let apiProduct: string = "";
-const apiVersion = "2021-01-01-preview";
-
-const functionRg: string = "lithographtestfunction";
-const functionAppName: string = "lithograph-test-function";
-const displayName: string = "Test API 4";
-const apiName: string = "test4";
-let apiUrlSuffix: string = "";
+// Resource groups
 const apimRg: string = "lithographtestfunction";
+const functionRg: string = "lithographtestfunction";
+
+// Function app
+const functionAppName: string = "lithograph-test-function";
+
+// APIM
 const apimName: string = "lithograph-test";
+const apiName: string = "test10";
+const displayName: string = "Test API 10";
+let apiProduct: string = "";
+let apiUrlSuffix: string = "";
 
-
+// REST API & Identity
+const apiVersion = "2021-01-01-preview";
+const executionContext = ExecutionContext.create();
+const baseUrl: string = `https://management.azure.com/subscriptions/${executionContext.getSubscriptionId()}/`;
 let accessToken: string = "Bearer ";
 let auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application/json'}}
 
-const baseUrl: string = `https://management.azure.com/subscriptions/${executionContext.getSubscriptionId()}/`;
-
-// function createApi(apimRg: string, apimName: string, apiName: string, displayName: string) {
-
-//     const createApiUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/apis/" + apiName + "?api-version=" + apiVersion;
-
-//     const body = {
-//         "id" : "/apis/" + apiName,
-//         "name" : apiName,
-//         "properties" : {
-//             "displayName" : displayName,
-//             "protocols" : ["https"],
-//             "description" : "Test",
-//             "path" : apiName
-//         }
-//     }
-//     return axios.put(baseUrl + createApiUrl, body, auth)
-//         .then(function (response: any) {
-//             return 1
-//         })
-//         .catch(function(error: any) {
-//             return 0
-//         })
-// }
-
-// Get access key from function
-// # https://docs.microsoft.com/en-us/azure/api-management/import-function-app-as-api#authorization -- Host key auto created inside function, TODO, using defualt for now
+function getFunctions(functionRg: string, functionAppName : string) {
+    
+    const functionsUrl = "resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName + "/functions?api-version=2016-08-01";
+    const functionsList = axios.get(baseUrl + functionsUrl, auth)
+        .then(function (response) {
+            //console.log("response.data.value: ", response.data.value)
+            let item: any;
+            for (item of response.data.value) {
+                console.log(green, "   SUCCESS: " + item.properties.name)
+            }
+            return response.data.value;
+        })
+        .catch(function (error) {
+            console.log(red, "FAILED to get functions from: " + functionAppName + ". " + error)
+        })
+        
+    return functionsList;
+}
 
 // Add function access key to APIM
 function apimAddKeys(apimRg: string, apimName: string, apiName: string, functionKey: any) {
@@ -78,6 +70,7 @@ function apimAddKeys(apimRg: string, apimName: string, apiName: string, function
 
     return axios.put(baseUrl + addKeysUrl, addKeysBody, auth)
         .then(function (response: any) {
+            // console.log("response: ", response)
             return 1;
         })
         .catch(function (error: any) {
@@ -96,7 +89,7 @@ function addApimBackend(apimRg: string, apimName: string, apiName: string, funct
             "description": functionAppName,
             "url": 'https://' + functionUrl + '/api',
             "protocol": "http",
-            "resourceId": "https://management.azure.com/subscriptions/811ac24a-7a5f-41a7-acff-8dd138042333/resourceGroups/Split/providers/Microsoft.Web/sites/SplitTestFunction",
+            "resourceId": "https://management.azure.com/subscriptions/811ac24a-7a5f-41a7-acff-8dd138042333/resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName,
             "credentials": {
                 "header": {
                     "x-functions-key": ["{{" + apiName + "-key}}"]
@@ -111,6 +104,7 @@ function addApimBackend(apimRg: string, apimName: string, apiName: string, funct
         .catch(function (error: any) {
             return 0;
         })
+
 }
 
 function parseOperation(item: { properties: { name: string; invoke_url_template: string; }; }, binding: { [x: string]: any; route: string | any[]; }, method: string) {
@@ -141,6 +135,7 @@ function parseOperation(item: { properties: { name: string; invoke_url_template:
     else {
         op.urlTemplate = item.properties.invoke_url_template.split('.net/api').slice(-1)[0]
     }
+    //console.log(op);
     return op;
 }
 
@@ -173,11 +168,10 @@ function addOperation(apimRg: string, apimName: string, apiName: string, operati
 
     return axios.put(baseUrl + operationUrl, operationBody, auth)
         .then(function (response: any) {
-            // console.log('Success 4');
+            console.log(green, '   SUCCESS: operation added');
         })
         .catch(function (error: any) {
-            // console.log('Fail 4');
-            // console.log(error)
+            console.log(red, '   FAILED to add operation. ' + error);
         })
 }
 
@@ -192,17 +186,19 @@ function addPolicy(apimRg: string, apimName: string, apiName: string, operationN
     }
     return axios.put(baseUrl + policyUrl, policyBody, auth)
         .then(function (response: any) {
-            // console.log('Success 5');
+            console.log(green, '   SUCCESS: policy added', );
         })
         .catch(function (error: any) {
-            // console.log('Fail 5');
+            console.log(red, '   FAILED to add policy. ' + error);
         })
 }
 
 async function main() {
+    console.log(yellow, '\nRun started @ ' + Date().toLocaleString() + '\n');
 
     const credential = executionContext.getCredential();
-    const client = new WebSiteManagementClient(credential, executionContext.getSubscriptionId());
+    const webSiteClient = new WebSiteManagementClient(credential, executionContext.getSubscriptionId());
+    const APIM_Client = new ApiManagementClient(credential, executionContext.getSubscriptionId())
 
     // TODO: use credential with SDK
     // Kevin H - Temporary to have the existing implementation successfully run
@@ -211,51 +207,38 @@ async function main() {
     auth = {headers: {'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json'}}
 
     // Get URL of Function App
-    console.log('Getting Function App URL...')
-    const functionAppUrl: string | undefined = await getFunctionAppURL(client, functionRg, functionAppName)
-    console.log(functionAppUrl);
+    console.log(blue, `> Getting URL for function app (${functionAppName})...`)
+    const functionAppUrl: string | undefined = await getFunctionAppURL(webSiteClient, functionRg, functionAppName)
 
     // Get list of individual functions within function app
-    console.log('Getting Functions...')
-    const functions = await getFunctions(client, functionRg, functionAppName);
-    //console.log(functions)
-    // console.log(functions.map((x: { properties: { name: any; }; }) => x.properties.name));
+    console.log(blue, `\n> Getting individual functions within function app (${functionAppName})...`)
+    const functions = await getFunctions(functionRg, functionAppName)
+    // const functions = await getFunctions(client, functionRg, functionAppName);
 
     // Get key for functions
-    console.log('Getting Function Key...')
-    const defaultKey = await getFunctionKey(client, functionRg, functionAppName, apimName)
-    //const defaultKey = await getFunctionKey(functionRg, functionAppName)
+    console.log(blue, `\n> Getting function app (${functionAppName}) host key...`)
+    const defaultKey = await getFunctionKey(webSiteClient, functionRg, functionAppName, apimName)
 
-    console.log('Found Key: ' + defaultKey);
-
-    // Create API within APIM
-    console.log('Creating new API within API Management...')
-    // const createApiResult = await createApi(apimRg, 'lithograph-test', apiName, displayName);
-    const createApiResult = await createAPI(apimRg, apimName, apiName, displayName, credential, executionContext.getSubscriptionId())
-
-    if (createApiResult == 1) {
-        //console.log('Successfully created API');
-        console.log('*****Successfully called the API');
-    } else {
-        console.log('#####FAILED to create new API');
-    }
+    // Create API in APIM
+    console.log(blue, `\n> Creating new API (${apiName}) in APIM (${apimName})`)
+    const createApiResult = await createAPI(APIM_Client, apimRg, apimName, apiName, displayName, credential, executionContext.getSubscriptionId());
 
     // Add Azure Function Keys to APIM
-    console.log('Adding Function Keys to API Management...');
-    const apimKeyPromise = await apimAddKeys(apimRg, 'lithograph-test', apiName, defaultKey);
+    console.log(blue, `\n> Adding function (${functionAppName}) host key to APIM (${apimName}/${apiName})...`);
+    const apimKeyPromise = await apimAddKeys(apimRg, apimName, apiName, defaultKey);
     if (apimKeyPromise == 1) {
-        console.log('Success');
+        console.log(green, `   SUCCESS: added to APIM (${apimName}/${apiName})`);
     } else {
-        console.log('Failed to add keys');
+        console.log(red, `   FAILED to add function host key from (${functionAppName}) to APIM (${apimName})`);
     }
     
     // Add Function as Backend in APIM
-    console.log('Adding Function App as an API Management Backend...');
-    const apimBackendPromise = await addApimBackend(apimRg, 'lithograph-test', apiName, functionAppName, functionAppUrl as string);
+    console.log(blue, `\n> Adding function app (${functionAppName}) as an APIM backend...`);
+    const apimBackendPromise = await addApimBackend(apimRg, apimName, apiName, functionAppName, functionAppUrl as string);
     if (apimBackendPromise == 1) {
-        console.log('Success');
+        console.log(green, '   SUCCESS: ' + functionAppUrl + '/api');
     } else {
-        console.log('Failed to add Backend');
+        console.log(red, `   FAILED to add function app (${functionAppName}) to APIM backend (${apimName})`);
     }
 
     let operationsInfo = [];
@@ -263,17 +246,18 @@ async function main() {
     let binding:any;
     let method:any;
     for (item of functions) {
+        console.log(blue, "\n> Configuring APIM for function: " + item.properties.name)
         for (binding of item.properties.config.bindings) {
             if (binding.type == 'httpTrigger') {
                 for (method of binding.methods) {
                     const op = parseOperation(item, binding, method);
-                    addOperation(apimRg, 'lithograph-test', apiName, op.operation_name, op.operation_display_name, op.urlTemplate, op.method, op.templateParameters);
-                    addPolicy(apimRg, 'lithograph-test', apiName, op.operation_name, apiName);
+                    await addOperation(apimRg, apimName, apiName, op.operation_name, op.operation_display_name, op.urlTemplate, op.method, op.templateParameters);
+                    await addPolicy(apimRg, apimName, apiName, op.operation_name, apiName);
                 }
             }
         }
     }
-    console.log('Successful Run')
+    console.log(yellow, '\nRun complete @ ' + Date().toLocaleString() + '\n');
 }
 
-main()
+main();
