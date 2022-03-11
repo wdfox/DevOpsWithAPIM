@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { WebSiteManagementClient } from "@azure/arm-appservice";
-import { ApiManagementClient, ApiCreateOrUpdateParameter } from "@azure/arm-apimanagement";
+import { ApiManagementClient } from "@azure/arm-apimanagement";
 
 import ExecutionContext from './executionContext';
 // import { getFunctions } from './getFunctions'; // disabled for now until updated to return full JSON payload like the REST API did
@@ -23,8 +23,8 @@ const functionAppName: string = "lithograph-test-function";
 
 // APIM
 const apimName: string = "lithograph-test";
-const apiName: string = "test10";
-const displayName: string = "Test API 10";
+const apiName: string = "test12";
+const displayName: string = "Test API 12";
 let apiProduct: string = "";
 let apiUrlSuffix: string = "";
 
@@ -43,12 +43,12 @@ function getFunctions(functionRg: string, functionAppName : string) {
             //console.log("response.data.value: ", response.data.value)
             let item: any;
             for (item of response.data.value) {
-                console.log(green, "   SUCCESS: " + item.properties.name)
+                console.log(green, "    SUCCESS: " + item.properties.name)
             }
             return response.data.value;
         })
         .catch(function (error) {
-            console.log(red, "FAILED to get functions from: " + functionAppName + ". " + error)
+            console.log(red, "    FAILED to get functions from: " + functionAppName + ". " + error)
         })
         
     return functionsList;
@@ -115,7 +115,7 @@ function parseOperation(item: { properties: { name: string; invoke_url_template:
     op['operation_display_name'] = item.properties.name
     op['operation_name'] = method.toLowerCase() + '-' + item.properties.name.toLowerCase();
     if ('route' in binding) {
-        op['urlTemplate'] = binding['route']
+        op['urlTemplate'] = binding['route'].toString().replace("?", "")
         let parameters = [];
         var ind = 0;
         var start = 0;
@@ -124,7 +124,7 @@ function parseOperation(item: { properties: { name: string; invoke_url_template:
                 start = ind + 1;
             }
             if (letter == '}') {
-                parameters.push(binding.route.slice(start,ind))
+                parameters.push(binding.route.slice(start,ind).toString().replace("?", ""))
             }
             ind += 1;
         }
@@ -133,9 +133,12 @@ function parseOperation(item: { properties: { name: string; invoke_url_template:
         }
     }
     else {
-        op.urlTemplate = item.properties.invoke_url_template.split('.net/api').slice(-1)[0]
+        op.urlTemplate = item.properties.invoke_url_template.split('.net/api').slice(-1)[0].toString().replace("?", "")
     }
-    //console.log(op);
+
+    // temp log the operation for debugging the "?"
+    console.log(op);
+
     return op;
 }
 
