@@ -11,6 +11,11 @@ on:
         required: true
         default: 'Split'
         type: string
+      FunctionSubscription:
+        description: 'Subscription where the function is located'
+        required: true
+        default: '12345678-1234-1234-1234-123456789012'
+        type: string
       FunctionName:
         description: 'Name of the function we are importing'
         default: 'SplitTestFunction'

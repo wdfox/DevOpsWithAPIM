@@ -32,7 +32,7 @@ import { CredentialProvider } from './credentialProvider'
      }
 
      private static getSubscriptionId(): string {
-        const inputSubscriptionId = core.getInput('');
+        const inputSubscriptionId = core.getInput('FunctionSubscription', { required: false });
          
         const subscriptionId = inputSubscriptionId.length === 0 ? process.env.SUBSCRIPTION_ID : inputSubscriptionId;
 

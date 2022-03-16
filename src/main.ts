@@ -1,4 +1,5 @@
 import axios from 'axios'
+import * as core from '@actions/core'
 import ExecutionContext from './executionContext';
 import { getFunctions } from './getFunctions';
 import { getFunctionKey } from './getFunctionKey';
@@ -8,14 +9,30 @@ import { WebSiteManagementClient } from "@azure/arm-appservice";
 
 const executionContext = ExecutionContext.create();
 
-const functionRg: string = "apim-backend-functionapp";
-const functionAppName: string = "testFunction-";
-const displayName: string = "Test API 3";
-const apiName: string = "test3";
+// Actions input
+
+const functionRg: string = core.getInput('FunctionResourceGroup', { required: true });
+const functionAppName: string = core.getInput('FunctionName', { required: true });
+const displayName: string = core.getInput('DisplayName', { required: true });
+const apiName: string = core.getInput('APIName', { required: true });
 let apiUrlSuffix: string = "";
 
-const apimRg: string = "apim-functionapp";
-const apimName: string = "apim-function-test";
+const apimRg: string = core.getInput('APIMResourceGroup', { required: true });
+const apimName: string = core.getInput('APIMName', { required: true });
+//End of Actions Input
+
+//Local Development variables
+
+// const functionRg: string = "apim-backend-functionapp";
+// const functionAppName: string = "testFunction-";
+// const displayName: string = "Test API 3";
+// const apiName: string = "test3";
+// let apiUrlSuffix: string = "";
+
+// const apimRg: string = "apim-functionapp";
+// const apimName: string = "apim-function-test";
+
+// End of local development
 
 let apiProduct: string = "";
 const apiVersion = "2021-01-01-preview";
