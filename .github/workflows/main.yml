@@ -9,7 +9,7 @@ on:
       FunctionResourceGroup:
         description: 'Resource group where the function is located'
         required: true
-        default: 'Split'
+        default: 'apim-backend-functionapp'
         type: string
       FunctionSubscription:
         description: 'Subscription where the function is located'
@@ -18,7 +18,7 @@ on:
         type: string
       FunctionName:
         description: 'Name of the function we are importing'
-        default: 'SplitTestFunction'
+        default: 'testFunction-'
         required: true
         type: string
       DisplayName:
@@ -36,16 +36,16 @@ on:
         type: string
       APIMResourceGroup:
         description: 'Resource group of where API Management is located'
-        default: 'lithographtestfunction'
+        default: 'apim-functionapp'
         required: true
         type: string
       APIMName:
         description: 'Name of API Management Instance'
-        default: 'lithograph-test'
+        default: 'apim-function-test'
         required: true
         type: string
       APIProduct:
-        description: 'Name of API Management Instance'
+        description: 'Name of API Management Product'
         default: 'test-product'
         required: false
         type: string
