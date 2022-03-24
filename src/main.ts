@@ -7,6 +7,9 @@ import ExecutionContext from './executionContext';
 import { getFunctionKey } from './getFunctionKey';
 import { getFunctionAppURL } from './getFunctionAppURL';
 import { createAPI } from './createAPI';
+import { addAPIMNamedValues } from './addAPIMNamedValues';
+import { addAPIMBackend } from './addAPIMBackend';
+import { addAPIMPolicy } from './addAPIMPolicy';
 
 // Console Output
 const green: string = '\x1b[32m%s\x1b[0m';
@@ -23,8 +26,8 @@ const functionAppName: string = "lithograph-test-function";
 
 // APIM
 const apimName: string = "lithograph-test";
-const apiName: string = "test12";
-const displayName: string = "Test API 12";
+const apiName: string = "test16";
+const displayName: string = "Test API 16";
 let apiProduct: string = "";
 let apiUrlSuffix: string = "";
 
@@ -52,59 +55,6 @@ function getFunctions(functionRg: string, functionAppName : string) {
         })
         
     return functionsList;
-}
-
-// Add function access key to APIM
-function apimAddKeys(apimRg: string, apimName: string, apiName: string, functionKey: any) {
-    const addKeysUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/namedValues/" + apiName + "-key?api-version=" + apiVersion
-    const addKeysBody = {
-        "id" : "/namedValues/" + apiName + "-key",
-        "name" : apiName + "-key",
-        "properties" : {
-            "displayName" : apiName + "-key",
-            "value" : functionKey,
-            "tags" : ["key","function","auto"],
-            "secret" : "true"
-        }
-    }
-
-    return axios.put(baseUrl + addKeysUrl, addKeysBody, auth)
-        .then(function (response: any) {
-            // console.log("response: ", response)
-            return 1;
-        })
-        .catch(function (error: any) {
-            return 0;
-        })
-}
-
-// Add function as APIM Backend
-function addApimBackend(apimRg: string, apimName: string, apiName: string, functionAppName: string, functionUrl: string) {
-    const backendUrl = "resourceGroups/" + apimRg + "/providers/Microsoft.ApiManagement/service/" + apimName + "/backends/" + apiName + "?api-version=" + apiVersion
-    let backend_body:any;
-    const backendBody = backend_body = {
-        "id": apiName,
-        "name": apiName,
-        "properties": {
-            "description": functionAppName,
-            "url": 'https://' + functionUrl + '/api',
-            "protocol": "http",
-            "resourceId": "https://management.azure.com/subscriptions/811ac24a-7a5f-41a7-acff-8dd138042333/resourceGroups/" + functionRg + "/providers/Microsoft.Web/sites/" + functionAppName,
-            "credentials": {
-                "header": {
-                    "x-functions-key": ["{{" + apiName + "-key}}"]
-                }
-            }
-        }
-    }
-    return axios.put(baseUrl + backendUrl, backendBody, auth)
-        .then(function (response: any) {
-            return 1;
-        })
-        .catch(function (error: any) {
-            return 0;
-        })
-
 }
 
 function parseOperation(item: { properties: { name: string; invoke_url_template: string; }; }, binding: { [x: string]: any; route: string | any[]; }, method: string) {
@@ -211,6 +161,7 @@ async function main() {
 
     // Get URL of Function App
     console.log(blue, `> Getting URL for function app (${functionAppName})...`)
+    //const functionAppUrl: string | undefined = await getFunctionAppURL(webSiteClient, functionRg, functionAppName)
     const functionAppUrl: string | undefined = await getFunctionAppURL(webSiteClient, functionRg, functionAppName)
 
     // Get list of individual functions within function app
@@ -224,25 +175,28 @@ async function main() {
 
     // Create API in APIM
     console.log(blue, `\n> Creating new API (${apiName}) in APIM (${apimName})`)
-    const createApiResult = await createAPI(APIM_Client, apimRg, apimName, apiName, displayName, credential, executionContext.getSubscriptionId());
+    const createApiResult = await createAPI(APIM_Client, apimRg, apimName, apiName, displayName);
 
     // Add Azure Function Keys to APIM
-    console.log(blue, `\n> Adding function (${functionAppName}) host key to APIM (${apimName}/${apiName})...`);
-    const apimKeyPromise = await apimAddKeys(apimRg, apimName, apiName, defaultKey);
-    if (apimKeyPromise == 1) {
-        console.log(green, `   SUCCESS: added to APIM (${apimName}/${apiName})`);
-    } else {
-        console.log(red, `   FAILED to add function host key from (${functionAppName}) to APIM (${apimName})`);
-    }
+    console.log(blue, `\n> Adding function key to APIM as named values (${apimName})...`);
+    //const apimKeyPromise = await apimAddKeys(apimRg, apimName, apiName, defaultKey);
+    const apimKeyPromise = await addAPIMNamedValues(APIM_Client, apimRg, apimName, apiName, defaultKey);
+
+    // if (apimKeyPromise == 1) {
+    //     console.log(green, `   SUCCESS: added to APIM (${apimName}/${apiName})`);
+    // } else {
+    //     console.log(red, `   FAILED to add function host key from (${functionAppName}) to APIM (${apimName})`);
+    // }
     
     // Add Function as Backend in APIM
     console.log(blue, `\n> Adding function app (${functionAppName}) as an APIM backend...`);
-    const apimBackendPromise = await addApimBackend(apimRg, apimName, apiName, functionAppName, functionAppUrl as string);
-    if (apimBackendPromise == 1) {
-        console.log(green, '   SUCCESS: ' + functionAppUrl + '/api');
-    } else {
-        console.log(red, `   FAILED to add function app (${functionAppName}) to APIM backend (${apimName})`);
-    }
+    //const apimBackendPromise = await addApimBackend(apimRg, apimName, apiName, functionAppName, functionAppUrl as string);
+    const apimBackendPromise = addAPIMBackend(APIM_Client, apimRg, apimName, apiName, functionAppName, functionRg, functionAppUrl)
+    // if (apimBackendPromise == 1) {
+    //     console.log(green, '   SUCCESS: ' + functionAppUrl + '/api');
+    // } else {
+    //     console.log(red, `   FAILED to add function app (${functionAppName}) to APIM backend (${apimName})`);
+    // }
 
     let operationsInfo = [];
     let item:any;
@@ -255,7 +209,8 @@ async function main() {
                 for (method of binding.methods) {
                     const op = parseOperation(item, binding, method);
                     await addOperation(apimRg, apimName, apiName, op.operation_name, op.operation_display_name, op.urlTemplate, op.method, op.templateParameters);
-                    await addPolicy(apimRg, apimName, apiName, op.operation_name, apiName);
+                    //await addPolicy(apimRg, apimName, apiName, op.operation_name, apiName);
+                    await addAPIMPolicy(APIM_Client, apimRg, apimName, apiName, op.operation_name);
                 }
             }
         }

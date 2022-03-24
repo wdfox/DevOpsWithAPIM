@@ -6,9 +6,8 @@ import { ApiCreateOrUpdateParameter } from "@azure/arm-apimanagement";
 const green: string = '\x1b[32m%s\x1b[0m';
 const red: string = '\x1b[31m%s\x1b[0m';
 
-export async function createAPI(APIM_Client: any, apimRg: string, apimName: string, apiName: string, displayName: string, credential: any, subscriptionId: string): Promise<number | undefined> {
+export async function createAPI(APIM_Client: any, apimRg: string, apimName: string, apiName: string, displayName: string): Promise<number | undefined> {
     try {
-        // TODO: move this to main.ts and pass in
         const APIMParams: ApiCreateOrUpdateParameter = 
             {
                 "displayName" : displayName,

@@ -4,8 +4,9 @@ import { HostKeys, WebSiteManagementClient } from "@azure/arm-appservice";
 const green: string = '\x1b[32m%s\x1b[0m';
 const red: string = '\x1b[31m%s\x1b[0m';
 
+// export async function getFunctionAppURL(client: WebSiteManagementClient, functionRg: string, functionAppName: string): Promise<string>{
 export async function getFunctionAppURL(client: WebSiteManagementClient, functionRg: string, functionAppName: string): Promise<string | undefined> {
-    try {
+        try {
 
         // TODO: We should think about if we need to support slots
         // DOCS: https://docs.microsoft.com/en-us/rest/api/appservice/web-apps/list-host-name-bindings
