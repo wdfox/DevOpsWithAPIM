@@ -1,6 +1,7 @@
 import { PolicyContract, PolicyIdName, ApiManagementClient } from "@azure/arm-apimanagement";
 
-//https://docs.microsoft.com/en-us/javascript/api/@azure/arm-apimanagement/policy?view=azure-node-latest#@azure-arm-apimanagement-policy-createorupdate
+//https://docs.microsoft.com/en-us/javascript/api/@azure/arm-apimanagement/apioperationpolicy?view=azure-node-latest#@azure-arm-apimanagement-apioperationpolicy-createorupdate
+
 
 // Console Output
 const green: string = '\x1b[32m%s\x1b[0m';
@@ -10,42 +11,29 @@ export async function addAPIMPolicy(APIM_Client: ApiManagementClient, apimRg: st
     try {
         const policyContract: PolicyContract = 
             {
-                // "format": "rawxml",
-                // "value": "<policies>\n    <inbound>\n        <base />\n        <set-backend-service id=\"apim-generated-policy\" backend-id=\"" + apiName + "\" />\n    </inbound>\n    <backend>\n        <base />\n    </backend>\n    <outbound>\n        <base />\n    </outbound>\n    <on-error>\n        <base />\n    </on-error>\n</policies>"
-                format: "xml",
-                
-            //     value: `<policies>
-            //   <inbound />
-            //   <backend>
-            //     <forward-request />
-            //   </backend>
-            //   <outbound />
-            // </policies>`
-            value: `<policies>
-                        <inbound>
-                            <set-backend-service id="apim-generated-policy" backend-id="${apiName}" />
-                        </inbound>
-                        <backend>
-                            <base />
-                        </backend>
-                        <outbound>
-                            <base />
-                        </outbound>
-                        <on-error>
-                            <base />
-                        </on-error>
-                    </policies>`
+                format: "xml",  
+                value: `<policies>
+                            <inbound>
+                                <base />
+                                <set-backend-service id="apim-generated-policy" backend-id="${apiName}" />
+                            </inbound>
+                            <backend>
+                                <base />
+                            </backend>
+                            <outbound>
+                                <base />
+                            </outbound>
+                            <on-error>
+                                <base />
+                            </on-error>
+                        </policies>`
             }
 
-            console.log(policyContract)
-            const policyIdName: PolicyIdName = "policy";
+        console.log(policyContract)
+        const policyIdName: PolicyIdName = "policy";
 
-//console.log("operationName:"  + operationName);
-//        await APIM_Client.namedValue.beginCreateOrUpdateAndWait(apimRg, apimName, apiName + "-key", namedValueContract)
+        APIM_Client.apiOperationPolicy.createOrUpdate(apimRg, apimName, apiName, operationName, policyIdName, policyContract);
 
-        APIM_Client.policy.createOrUpdate(apimRg, apimName, policyIdName, policyContract);
-
-        //createOrUpdate(resourceGroupName: string, serviceName: string, policyId: PolicyIdName, parameters: PolicyContract, options?: PolicyCreateOrUpdateOptionalParams): Promise<PolicyCreateOrUpdateResponse>
         console.log(green, '   SUCCESS: Added the policy contract to: ' + apimName);
         return 1;
     } catch (error) {

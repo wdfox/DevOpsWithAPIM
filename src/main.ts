@@ -10,6 +10,7 @@ import { createAPI } from './createAPI';
 import { addAPIMNamedValues } from './addAPIMNamedValues';
 import { addAPIMBackend } from './addAPIMBackend';
 import { addAPIMPolicy } from './addAPIMPolicy';
+import { addAPIMOperation } from './addAPIMOperation';
 
 // Console Output
 const green: string = '\x1b[32m%s\x1b[0m';
@@ -26,8 +27,8 @@ const functionAppName: string = "lithograph-test-function";
 
 // APIM
 const apimName: string = "lithograph-test";
-const apiName: string = "test16";
-const displayName: string = "Test API 16";
+const apiName: string = "test19";
+const displayName: string = "Test API 19";
 let apiProduct: string = "";
 let apiUrlSuffix: string = "";
 
@@ -35,7 +36,7 @@ let apiUrlSuffix: string = "";
 const apiVersion = "2021-01-01-preview";
 const executionContext = ExecutionContext.create();
 const baseUrl: string = `https://management.azure.com/subscriptions/${executionContext.getSubscriptionId()}/`;
-let accessToken: string = "Bearer ";
+let accessToken: string = "Bearer "
 let auth = {headers: {'Authorization': accessToken, 'Content-Type': 'application/json'}}
 
 function getFunctions(functionRg: string, functionAppName : string) {
@@ -208,7 +209,8 @@ async function main() {
             if (binding.type == 'httpTrigger') {
                 for (method of binding.methods) {
                     const op = parseOperation(item, binding, method);
-                    await addOperation(apimRg, apimName, apiName, op.operation_name, op.operation_display_name, op.urlTemplate, op.method, op.templateParameters);
+                    //await addOperation(apimRg, apimName, apiName, op.operation_name, op.operation_display_name, op.urlTemplate, op.method, op.templateParameters);
+                    await addAPIMOperation(APIM_Client, apimRg, apimName, apiName, op.operation_name, op.operation_display_name, op.urlTemplate, op.method, op.templateParameters);
                     //await addPolicy(apimRg, apimName, apiName, op.operation_name, apiName);
                     await addAPIMPolicy(APIM_Client, apimRg, apimName, apiName, op.operation_name);
                 }
