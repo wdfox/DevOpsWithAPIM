@@ -16,7 +16,7 @@ export async function createAPI(APIM_Client: any, apimRg: string, apimName: stri
                 "path" : apiName
             }
         await APIM_Client.api.beginCreateOrUpdateAndWait(apimRg, apimName, apiName, APIMParams);
-        console.log(green, '   SUCCESS: created the API: ' + apimName + '/' + apiName);
+        console.log(green, '   SUCCESS: Created the API: ' + apimName + '/' + apiName);
         return 1;
     } catch (error) {
         console.log(red, '   FAILED to create new API: ' + apimName + '/' + apiName + '. Error message: ' + error);

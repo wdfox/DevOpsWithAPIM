@@ -28,16 +28,13 @@ export async function addAPIMPolicy(APIM_Client: ApiManagementClient, apimRg: st
                             </on-error>
                         </policies>`
             }
-
-        console.log(policyContract)
         const policyIdName: PolicyIdName = "policy";
-
         APIM_Client.apiOperationPolicy.createOrUpdate(apimRg, apimName, apiName, operationName, policyIdName, policyContract);
 
-        console.log(green, '   SUCCESS: Added the policy contract to: ' + apimName);
+        console.log(green, '   SUCCESS: Policy added');
         return 1;
     } catch (error) {
-        console.log(red, '   FAILED to add the policy contract to: ' + apimName + '. Error message: ' + error);
+        console.log(red, '   FAILED to add the policy contract. Error message: ' + error);
         return 0;
     }
 }

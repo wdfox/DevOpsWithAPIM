@@ -17,10 +17,10 @@ export async function addAPIMNamedValues(APIM_Client: any, apimRg: string, apimN
             }
 
         await APIM_Client.namedValue.beginCreateOrUpdateAndWait(apimRg, apimName, apiName + "-key", namedValueContract)
-        console.log(green, '   SUCCESS: Added the named value contract: ' + apimName);
+        console.log(green, '   SUCCESS: Added the named values: ' + apimName);
         return 1;
     } catch (error) {
-        console.log(red, '   FAILED to add the named value contract: ' + apimName + '. Error message: ' + error);
+        console.log(red, '   FAILED to add the named values: ' + apimName + '. Error message: ' + error);
         return 0;
     }
 }

@@ -35,7 +35,7 @@ export async function addAPIMOperation(APIM_Client: ApiManagementClient, apimRg:
 
         await APIM_Client.apiOperation.createOrUpdate(apimRg, apimName, apiName, operationName, operationContract);
 
-        console.log(green, '   SUCCESS: operation added');
+        console.log(green, '   SUCCESS: Operation added');
         return 1;
     } catch (error) {
         console.log(red, '   FAILED to add operation. ' + error);
